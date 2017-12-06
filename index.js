@@ -16,22 +16,24 @@ watch(appRoot, function(evt, filename) {
   EventBus.dispatch(filename, this, newModule);
 });
 
-// loads all the files in the array
-const loadDependencies = function (files) {
-  const dependencies = [];
-  for (var i = 0, len = files.length; i < len; i++) {
-    // var file = appRoot + "/" + files[i];
-    var file = files[i];
-    dependencies[file] = require(file);
-    // listening for the changes in the file and reassign
-    EventBus.addEventListener(file, function change(event, newModule) {
-      dependencies[event.type] = newModule;
-    });
-  }
-  return dependencies;
+const load = function(file) {
+  file = appRoot + file;
+  let d = require(file);
+  let p = {
+    "d" : d,
+    "file" : file
+  };
+  const obj = new Proxy(p, {
+    get: function(target, name, receiver) {
+        return target.d[name];
+    }
+  });
+  // listening for the change event and reassign
+  EventBus.addEventListener(file, function change(event, newModule) {
+    obj.d = newModule;
+  });
+  return obj;
 }
 
-module.exports = {
-  loadDependencies
-}
+module.exports = load;
 

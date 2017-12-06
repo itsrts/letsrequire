@@ -1,13 +1,9 @@
-const appRoot = process.cwd();
 var http = require('http');
-var lets = require('./index.js');
+var load = require('./index.js');
 
-let REPLY = appRoot + "/reply.js";
-let d = lets.loadDependencies([REPLY]);
-
-console.log(d);
+let reply = load("/reply.js");
 
 http.createServer(function (req, res) {
-  res.write(d[REPLY].reply());
+  res.write(reply.reply());
   res.end();
 }).listen(8080);

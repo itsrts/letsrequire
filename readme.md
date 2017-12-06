@@ -1,33 +1,25 @@
-Hot require your dependencies
+Hot require your dependencies, load all your dependencies using this library and you are not required to restart your server for every change you make in the code.
 
-A very simple logic of replacing objects with array of dependencies.
+You can run your application with simple "node filename.js" and it will hot-load your dependencies.
+The best part, you are not required to do a lot of change in your existing application.
 
-Let's follow the steps:
- - require the package "letsrequire"
- - create constant variables having path of the local "js" you want to require
- - initiate "loaddependencies" by passing all your constant variable in an array
- - you get an array of all of your dependencies
- - use the constans created as reference of your "js" files to access everything
+How To : Just require the library as "load" and replace all your "require(...)" line of code with "load(...)"
 
 Example :
+
 <code>
-    // get the app Root Directory
-    const appRoot = process.cwd();
 
     var http = require('http');
 
-    // replace the following line with "var lets = require('./index.js');"
-    var lets = require('./index.js');
+    var load = require('letsrequire');
 
-    // create constants for all the local dependencies
-    let REPLY = appRoot + "/reply.js";
-
-    // load the dependencies by passing as an array
-    let d = lets.loadDependencies([REPLY]);
+    // load the dependencies
+    let reply = load("/reply.js");
+    // the above line was earlier written as : let reply = require("./reply.js");
 
     http.createServer(function (req, res) {
-        // use the dependencies from the array
-        res.write(d[REPLY].reply());
+        // use the dependency as you were using it earlier
+        res.write(reply.reply());
         res.end();
     }).listen(8080);
 </code>

@@ -1,6 +1,6 @@
 {
   "name": "letsrequire",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Hot require your dependencies without reloading the server",
   "main": "index.js",
   "scripts": {

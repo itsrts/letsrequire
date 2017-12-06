@@ -1,7 +1,7 @@
 const appRoot = process.cwd();
 const watch = require('node-watch');
 const reload = require('require-reload')(require);
-const EventBus = require(appRoot + '/eventbus.min.js');
+const EventBus = require('./eventbus.min.js');
 
 // listening for file changes
 watch(appRoot, function(evt, filename) {

@@ -1,17 +1,17 @@
 const appRoot = process.cwd();
 const watch = require('node-watch');
-const reload = require('require-reload')(require);
 const EventBus = require('./eventbus.min.js');
 
 // listening for file changes
 watch(appRoot, function(evt, filename) {
   // skipping unwanted changes, which no one is listening
   if(!EventBus.hasEventListener(filename)) {
-    console.log("not reloading", filename);
+    // console.log("not reloading", filename);
     return;
   }
   // dispatching event for the file contents changed with the reloaded module
-  const newModule = reload(filename);
+  delete require.cache[filename]
+  const newModule = require(filename);
   console.log('reloaded : ', filename);
   EventBus.dispatch(filename, this, newModule);
 });

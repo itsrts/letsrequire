@@ -9,7 +9,7 @@ How To : Just require the library as "load" and replace all your "require(...)" 
 
 Example :
 
-A dependency file to return a simple string
+A dependency file to return a simple string, let's name it  : reply.js
 <code>
 
     let anythingdynamic = function() {
@@ -21,7 +21,7 @@ A dependency file to return a simple string
     }
 </code>
 
-Some simple server, to response the string from the above file
+Some simple server, to response the string from the above file, let's name it  : server.js
 <code>
 
     var http = require('http');

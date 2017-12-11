@@ -10,7 +10,7 @@ watch(appRoot, function(evt, filename) {
     return;
   }
   // dispatching event for the file contents changed with the reloaded module
-  delete require.cache[filename]
+  delete require.cache[filename];
   const newModule = require(filename);
   console.log('reloaded : ', filename);
   EventBus.dispatch(filename, this, newModule);

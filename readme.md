@@ -11,19 +11,16 @@ Example :
 
 A dependency file to return a simple string
 <code>
-
     let anythingdynamic = function() {
         return "this string can be changed in runtime, and server will serve the updated one";
     }
 
     module.exports = {
         anythingdynamic
-    }
-</code>
+    }</code>
 
 Some simple server, to response the string from the above file
 <code>
-
     var http = require('http');
 
     var load = require('letsrequire');
@@ -36,8 +33,7 @@ Some simple server, to response the string from the above file
         // use the dependency as you were using it earlier
         res.write(reply.anythingdynamic());
         res.end();
-    }).listen(8080);
-</code>
+    }).listen(8080);</code>
 
 <b>How does it work</b>
 It uses the native require module to serve the core purpose. Watches for file changes only on the modules that are required by this library and not all the files.

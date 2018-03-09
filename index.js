@@ -1,8 +1,11 @@
+"use strict";
+
 var Module = require('module');
 var fs = require('fs');
 const watch = require('node-watch');
 const EventBus = require('./eventbus.min.js');
 const appRoot = process.cwd();
+const map = {};
 // var _require = require;
 
 // listening for file changes
@@ -22,70 +25,110 @@ watch(appRoot, { recursive: true }, function(evt, filename) {
   } catch (error) {
     // restoring the old_module, as we got an exception with the new one
     Module._cache[filename] = old_module;
-    console.log("\n\n***OOPs We got a problem reloading***", filename);
+    console.log("\n\n***OOPs We got a problem while hot loading***", filename);
     console.log(error);
     console.log("\n***The above error should be helpful***");
   }
 });
 
-const stack = function() {
-  var orig = Error.prepareStackTrace;
-  Error.prepareStackTrace = function(_, stack){ return stack; };
-  var err = new Error;
-  Error.captureStackTrace(err, arguments.callee);
-  var stack = err.stack;
-  Error.prepareStackTrace = orig;
-  return stack;
+let listen = function(map1) {
+  const map = map1;
+  
+  EventBus.addEventListener(map.path, function change(event, newModule) {
+    map.source = newModule;
+    map.target = newModule;
+    if(map.isnew) {
+      if(Array.isArray(map.args)) {
+        map.target = new newModule(...map.args);
+      } else {
+        map.target = new newModule(map.args);
+      }
+    }
+  });
+}
+
+let addProxy = function(map1) {
+  const map = map1;
+
+  const pro = new Proxy(map.target, {
+    construct: function (target, args) {
+      let _map = {};
+      _map.isnew = true;
+      _map.source = map.source;
+      _map.args = args;
+      if(Array.isArray(args)) {
+        _map.target = new _map.source(...args);
+      } else {
+        _map.target = new _map.source(args);
+      }
+      _map.path = map.path;
+      listen(_map);
+      return addProxy(_map);
+    },
+    apply: function (target, that, args) {
+      if(that == undefined) {
+        map.target(...args);
+      } else if(Array.isArray(args)) {
+        map.target.apply(that, ...args);
+      } else {
+        map.target.apply(that, args);
+      }
+    },
+    get: function(target, name, receiver) {
+        return map.target[name];
+    },
+    set: function (target, key, value) {
+      if (key in map.target) { return false; }
+      return map.target[key] = value;
+    },
+    deleteProperty: function (target, key) {
+      if (key in map.target) { return false; }
+      return map.target.removeItem(key);
+    },
+    enumerate: function (target, key) {
+      return Object.keys(map.target);
+    },
+    ownKeys: function (target, key) {
+      return Object.keys(map.target);
+    },
+    has: function (target, key) {
+      return key in map.target || (map.target.hasItem && map.target.hasItem(key));
+    },
+    defineProperty: function (target, key, oDesc) {
+      if (oDesc && 'value' in oDesc) { map.target.setItem(key, oDesc.value); }
+      return map.target;
+    },
+    getOwnPropertyDescriptor: function (target, key) {
+      return Object.getOwnPropertyDescriptor(map.target, key);
+      var vValue = map.target[key];
+      return vValue ? {
+        value: vValue,
+        writable: true,
+        enumerable: true,
+        configurable: true
+      } : undefined;
+    }
+  });
+  return pro;
 }
 
 let load = function(file) {
-  if(!file) {
-    return null;
+  let path = Module._resolveFilename(file, this, false, {});
+  let d = Module._load(file, this, /* isMain */ false);
+  let nodeModule = appRoot + "/node_modules";
+  if(path.startsWith(nodeModule) || !path.startsWith(appRoot)) {
+    return d;
   }
-  // check if it's relative to the app root directory
-  let dir = null;
-  try {
-    dir = require.resolve(appRoot + "/" + file);
-  } catch (error) {
-    dir = null;
-  }
-  if(dir) {
-    file = dir;
-  }
-  // check if it's a relative path
-  else if(file.startsWith(".")) {
-    file = file.replace(".", "");
-    let parent = stack()[2].getFileName();
-    parent = parent.split("/");
-    let count = parent.length;
-    // get the count of . or ..
-    let back = 1;
-    if(file.startsWith("..")) {
-      back = (temp.match(/..\//g) || []).length;
-    }
-    parent = "/" + parent.slice(1 , count - back).join("/");
-    file = parent +file;
-    file = file.replace(/\/\//g, "/");
-    file = require.resolve(file);
-  } else {
-    return Module._load(file);
-  }
-  let d = Module._load(file);
-  let p = {
-    "d" : d,
-    "file" : file
-  };
-  const obj = new Proxy(p, {
-    get: function(target, name, receiver) {
-        return target.d[name];
-    }
-  });
-  // listening for the change event and reassign
-  EventBus.addEventListener(file, function change(event, newModule) {
-    obj.d = newModule;
-  });
+  // console.log(path);
+  let map = {};
+  map.isnew = false;
+  map.source = d;
+  map.target = d;
+  map.path = path;
+  const obj = addProxy(map);
+  listen(map);
   return obj;
-}
+};
 
 load = new Proxy(load, {
   get: function(target, name, receiver) {

@@ -1,7 +1,7 @@
 var http = require('http');
-var load = require('./index.js');
+require('./index.js');
 
-let reply = load("/reply.js");
+let reply = require("./reply.js");
 
 http.createServer(function (req, res) {
   res.write(reply.reply());

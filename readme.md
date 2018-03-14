@@ -22,21 +22,8 @@ require('letsrequire');
 
 ## API
 
-
-### require('./same-directory-file.js')
-
-loading the dependency in the same directory
-
-### require('../../other-directory-file.js')
-
-loading the dependency with the relative path
-
-### require('directory1/directory2/file.js') -> preffered
-
-loading the dependency with the relative path from the application root directory, don't start with a '/' but with the name of the directory
-This is preffered as you are in relative with your app root directory. So your code to require a dependency remains same accross all files.
-
-### require('some-dependency-from-node_modules')
+Nothing as such, just add the 'require' statement and you are good to go.
+As the library overrides the native implementation of require, you do not need to make any other change in your project/code.
 
 
 ## Errors - but nothing breaks..!! :)

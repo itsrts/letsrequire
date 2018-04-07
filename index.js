@@ -78,8 +78,9 @@ let addProxy = function(map1) {
         return map.target[name];
     },
     set: function (target, key, value) {
-      if (key in map.target) { return false; }
-      return map.target[key] = value;
+      if (key in map.target) { return true; }
+      map.target[key] = value;
+      return true;
     },
     deleteProperty: function (target, key) {
       if (key in map.target) { return false; }

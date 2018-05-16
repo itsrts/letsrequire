@@ -3,6 +3,11 @@
   "version": "2.1.5",
   "description": "Hot require your dependencies without restarting the server",
   "main": "index.js",
+  "keywords": [
+    "hot-require",
+    "require",
+    "reload"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
